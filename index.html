@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Our Forever 💍</title>
+
+<style>
+body {
+    margin: 2;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to bottom right, #ff758c, #ff7eb3);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+}
+
+.container {
+    max-width: 750px;
+    padding: 20px;
+    z-index: 2;
+}
+
+.hidden { display: none; }
+
+h1 { font-size: 2.5em; }
+h2 { font-weight: normal; }
+
+.countdown {
+    background: rgba(255,255,255,0.2);
+    padding: 15px;
+    border-radius: 15px;
+    margin: 20px 0;
+}
+
+button {
+    padding: 12px 30px;
+    margin: 10px;
+    font-size: 1.1em;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+}
+
+.yes { background: #ff4b5c; color: white; }
+.no { background: white; color: #ff4b5c; }
+
+.quiz-option {
+    display: block;
+    background: rgba(255,255,255,0.25);
+    color: white;
+    margin: 10px auto;
+    width: 80%;
+}
+
+.nav-buttons {
+    margin-top: 25px;
+}
+
+.photos img {
+    width: 30%;
+    border-radius: 20px;
+    margin: 10px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+/* Hearts */
+.heart {
+    position: absolute;
+    font-size: 20px;
+    animation: float 6s linear infinite;
+}
+@keyframes float {
+    0% { transform: translateY(100vh); opacity: 1; }
+    100% { transform: translateY(-10vh); opacity: 0; }
+}
+</style>
+</head>
+
+<body>
+
+<div id="hearts"></div>
+
+<!-- SLIDE 1 -->
+<div class="container" id="slide1">
+    <h1>Will you marry me? 💍</h1>
+    <h2>10th May 2026 — Our forever begins 💖</h2>
+    <div class="countdown" id="countdown"></div>
+
+    <button class="yes" onclick="goToSlide(2)">Yes 💕</button>
+    <button class="no" id="noBtn" onclick="growNo()">No 🙈</button>
+    
+</div>
+
+<!-- SLIDE 2 : QUIZ -->
+<div class="container hidden" id="slide2">
+    <h1>Love Quiz 💖</h1>
+    <h2 id="question"></h2>
+    <div id="options"></div>
+
+    <div class="nav-buttons">
+        <button onclick="goToSlide(1)">⬅️ Back</button>
+    </div>
+</div>
+
+<!-- SLIDE 3 : PHOTOS -->
+<div class="container hidden" id="slide3">
+    <h1>You passed… my heart 💖</h1>
+    <h2>Forever starts now</h2>
+
+    <div class="photos">
+        <img src="pic1.jpg">
+        <img src="pic2.jpg">
+        <img src="pic3.jpg">
+    </div>
+
+    <div class="nav-buttons">
+        <button onclick="goToSlide(2)">⬅️ Back</button>
+    </div>
+
+    <audio id="music" src="song.mp3"></audio>
+</div>
+
+<script>
+/* SLIDE CONTROL */
+function goToSlide(n) {
+    document.querySelectorAll(".container").forEach(c => c.classList.add("hidden"));
+    document.getElementById("slide" + n).classList.remove("hidden");
+
+    if (n === 3) document.getElementById("music").play();
+}
+
+/* NO BUTTON */
+let noClicks = 0;
+const noBtn = document.getElementById("noBtn");
+function growNo() {
+    noClicks++;
+    noBtn.style.transform = `scale(${1 + noClicks * 0.3})`;
+    if (noClicks === 3) {
+        noBtn.innerText = "Definitely YES 😍";
+        noBtn.onclick = () => goToSlide(2);
+    }
+}
+
+/* COUNTDOWN */
+const targetDate = new Date("May 10, 2026 00:00:00").getTime();
+setInterval(() => {
+    const now = new Date().getTime();
+    const d = targetDate - now;
+    document.getElementById("countdown").innerHTML =
+        `⏳ ${Math.floor(d/86400000)} Days to Forever`;
+}, 1000);
+
+/* QUIZ */
+const quiz = [
+  {
+    q: "Who loves more?",
+    options: ["Abhi", "Chelsi", "Both equal"],
+    answer: 1
+  },
+  {
+    q: "What do I love most about you?",
+    options: ["Your smile😊", "Your Eyes👀", "Your Dimples😊"],
+    answer: 2
+  },
+  {
+    q: "What do like the most?",
+    options: ["Food", "Us ❤️", "Sleep"],
+    answer: 1
+  }
+];
+
+let current = 0;
+
+function loadQuestion() {
+    const q = quiz[current];
+    question.innerText = q.q;
+    options.innerHTML = "";
+
+    q.options.forEach((opt, i) => {
+        const btn = document.createElement("button");
+        btn.className = "quiz-option";
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(i);
+        options.appendChild(btn);
+    });
+}
+
+function checkAnswer(i) {
+    if (i === quiz[current].answer) {
+        current++;
+        if (current < quiz.length) loadQuestion();
+        else goToSlide(3);
+    } else {
+        alert("Wrong answer 😜 Try again!");
+    }
+}
+
+/* LOAD QUIZ WHEN ENTERING SLIDE 2 */
+document.querySelector(".yes").onclick = () => {
+    goToSlide(2);
+    current = 0;
+    loadQuestion();
+};
+
+/* HEARTS */
+function createHeart() {
+    const heart = document.createElement("div");
+    heart.className = "heart";
+    heart.innerHTML = "❤";
+    heart.style.left = Math.random()*100+"vw";
+    document.body.appendChild(heart);
+    setTimeout(()=>heart.remove(),6000);
+}
+setInterval(createHeart,300);
+
+</script>
+
+</body>
+</html>
