@@ -6,7 +6,7 @@
 
 <style>
 body {
-    margin: 2;
+    margin: 0;
     font-family: 'Segoe UI', sans-serif;
     background: linear-gradient(to bottom right, #ff758c, #ff7eb3);
     height: 100vh;
@@ -22,9 +22,15 @@ body {
     max-width: 750px;
     padding: 20px;
     z-index: 2;
+    animation: fadeIn 0.6s ease;
 }
 
 .hidden { display: none; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
 
 h1 { font-size: 2.5em; }
 h2 { font-weight: normal; }
@@ -45,6 +51,11 @@ button {
     cursor: pointer;
 }
 
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .yes { background: #ff4b5c; color: white; }
 .no { background: white; color: #ff4b5c; }
 
@@ -56,9 +67,7 @@ button {
     width: 80%;
 }
 
-.nav-buttons {
-    margin-top: 25px;
-}
+.nav-buttons { margin-top: 25px; }
 
 .photos img {
     width: 30%;
@@ -82,31 +91,28 @@ button {
 
 <body>
 
-<div id="hearts"></div>
-
 <!-- SLIDE 1 -->
 <div class="container" id="slide1">
     <h1>Will you marry me? 💍</h1>
     <h2>10th May 2026 — Our forever begins 💖</h2>
     <div class="countdown" id="countdown"></div>
 
-    <button class="yes" onclick="goToSlide(2)">Yes 💕</button>
+    <button class="yes" onclick="startQuiz()">Yes 💕</button>
     <button class="no" id="noBtn" onclick="growNo()">No 🙈</button>
-    
 </div>
 
-<!-- SLIDE 2 : QUIZ -->
+<!-- SLIDE 2 -->
 <div class="container hidden" id="slide2">
     <h1>Love Quiz 💖</h1>
     <h2 id="question"></h2>
     <div id="options"></div>
 
     <div class="nav-buttons">
-        <button onclick="goToSlide(1)">⬅️ Back</button>
+        <button id="quizBackBtn" onclick="goToSlide(1)">⬅️ Back</button>
     </div>
 </div>
 
-<!-- SLIDE 3 : PHOTOS -->
+<!-- SLIDE 3 -->
 <div class="container hidden" id="slide3">
     <h1>You passed… my heart 💖</h1>
     <h2>Forever starts now</h2>
@@ -118,7 +124,9 @@ button {
     </div>
 
     <div class="nav-buttons">
-        <button onclick="goToSlide(2)">⬅️ Back</button>
+        <button disabled>⬅️ Back</button>
+        <!-- 🔄 FULL RESET -->
+        <button class="yes" onclick="location.reload()">OK ✅</button>
     </div>
 
     <audio id="music" src="song.mp3"></audio>
@@ -133,47 +141,46 @@ function goToSlide(n) {
     if (n === 3) document.getElementById("music").play();
 }
 
+/* START QUIZ */
+function startQuiz() {
+    document.getElementById("quizBackBtn").disabled = false;
+    current = 0;
+    loadQuestion();
+    goToSlide(2);
+}
+
 /* NO BUTTON */
 let noClicks = 0;
 const noBtn = document.getElementById("noBtn");
+
 function growNo() {
     noClicks++;
     noBtn.style.transform = `scale(${1 + noClicks * 0.3})`;
+
     if (noClicks === 3) {
         noBtn.innerText = "Definitely YES 😍";
-        noBtn.onclick = () => goToSlide(2);
+        noBtn.onclick = startQuiz;
     }
 }
 
 /* COUNTDOWN */
-const targetDate = new Date("May 10, 2026 00:00:00").getTime();
+const targetDate = new Date("May 10, 2026").getTime();
 setInterval(() => {
     const now = new Date().getTime();
-    const d = targetDate - now;
-    document.getElementById("countdown").innerHTML =
-        `⏳ ${Math.floor(d/86400000)} Days to Forever`;
+    document.getElementById("countdown").innerText =
+        `⏳ ${Math.floor((targetDate - now) / 86400000)} Days to Forever`;
 }, 1000);
 
 /* QUIZ */
 const quiz = [
-  {
-    q: "Who loves more?",
-    options: ["Abhi", "Chelsi", "Both equal"],
-    answer: 1
-  },
-  {
-    q: "What do I love most about you?",
-    options: ["Your smile😊", "Your Eyes👀", "Your Dimples😊"],
-    answer: 2
-  },
-  {
-    q: "What do like the most?",
-    options: ["Food", "Us ❤️", "Sleep"],
-    answer: 1
-  }
+    { q: "Who loves more?", options: ["Abhi", "Chelsi", "Both equal"], answer: 1 },
+    { q: "What do I love most about you?", options: ["Your smile 😊", "Your Eyes 👀", "Your Dimples 😊"], answer: 2 },
+    { q: "What do I like the most?", options: ["Food", "Us ❤️", "Sleep"], answer: 1 }
 ];
 
 let current = 0;
+const question = document.getElementById("question");
+const options = document.getElementById("options");
 
 function loadQuestion() {
     const q = quiz[current];
@@ -192,31 +199,29 @@ function loadQuestion() {
 function checkAnswer(i) {
     if (i === quiz[current].answer) {
         current++;
-        if (current < quiz.length) loadQuestion();
-        else goToSlide(3);
+        if (current < quiz.length) {
+            loadQuestion();
+        } else {
+            document.getElementById("quizBackBtn").disabled = true;
+            if (confirm("Ready to relive this? 💖")) {
+                goToSlide(3);
+            }
+        }
     } else {
         alert("Wrong answer 😜 Try again!");
     }
 }
-
-/* LOAD QUIZ WHEN ENTERING SLIDE 2 */
-document.querySelector(".yes").onclick = () => {
-    goToSlide(2);
-    current = 0;
-    loadQuestion();
-};
 
 /* HEARTS */
 function createHeart() {
     const heart = document.createElement("div");
     heart.className = "heart";
     heart.innerHTML = "❤";
-    heart.style.left = Math.random()*100+"vw";
+    heart.style.left = Math.random() * 100 + "vw";
     document.body.appendChild(heart);
-    setTimeout(()=>heart.remove(),6000);
+    setTimeout(() => heart.remove(), 6000);
 }
-setInterval(createHeart,300);
-
+setInterval(createHeart, 300);
 </script>
 
 </body>
